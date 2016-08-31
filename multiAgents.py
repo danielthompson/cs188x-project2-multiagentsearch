@@ -74,7 +74,61 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+
+        returnScoreElements = []
+
+        # # starting game score
+        # gameStateScore = successorGameState.getScore()
+        # returnScoreElements.append(gameStateScore)
+
+        # number of food pellets remaining - less is better
+        numFood = 0
+        for food in newFood.asList():
+            if food:
+                numFood += 1
+        returnScoreElements.append(- 10000 * numFood)
+
+        if numFood == 0:
+            return 1000000
+
+        # max dist to ghost - more is better
+        maxDistanceToGhost = 0
+        for state in newGhostStates:
+            distance = manhattanDistance(ghostState.configuration.pos, newPos)
+            if maxDistanceToGhost < distance:
+                maxDistanceToGhost = distance
+
+        returnScoreElements.append(maxDistanceToGhost / 2)
+
+        # if pacman is right next to a ghost, flee
+        if maxDistanceToGhost <= 2:
+            return -10000000
+
+        # # max dist to food - less is better
+        # maxDistanceToFood = 0
+        # for food in newFood.asList():
+        #     distance = manhattanDistance(food, newPos) + 2
+        #     if maxDistanceToFood < distance:
+        #         maxDistanceToFood = distance
+        #
+        # returnScoreElements.append(-maxDistanceToFood)
+
+        # min dist to food - less is better
+        minDistanceToFood = 1000000
+        for food in newFood.asList():
+            distance = manhattanDistance(food, newPos) + 2
+            if minDistanceToFood > distance:
+                minDistanceToFood = distance
+
+
+
+        returnScoreElements.append(- 100 * minDistanceToFood)
+
+        returnScore = 0
+        for element in returnScoreElements:
+            returnScore += element
+
+        return returnScore
 
 def scoreEvaluationFunction(currentGameState):
     """
