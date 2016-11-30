@@ -164,6 +164,46 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
       Your minimax agent (question 2)
     """
+    def maxValue(self, gameState, agentIndex, myDepth):
+        v = -1e309
+        legalActions = gameState.getLegalActions(agentIndex)
+
+        for action in legalActions:
+            successorState = gameState.generateSuccessor(agentIndex, action);
+            v = max(v, self.stateValue(successorState, myDepth + 1))
+
+        return v
+
+    def minValue(self, gameState, agentIndex, myDepth):
+        v = 1e309
+
+        legalActions = gameState.getLegalActions(agentIndex)
+
+        for action in legalActions:
+            successorState = gameState.generateSuccessor(agentIndex, action);
+            v = min(v, self.stateValue(successorState, myDepth + 1))
+
+        return v
+
+    def stateValue(self, gameState, myDepth):
+        # BASE CASE
+        calculatedDepth = (myDepth / gameState.getNumAgents())
+
+        if gameState.isLose() or gameState.isWin() or calculatedDepth >= self.depth:
+            return self.evaluationFunction(gameState)
+
+        # RECURSIVE CASES
+
+        # the agent that's about to move
+        agentIndex = myDepth % gameState.getNumAgents()
+
+        # if pacman is about to move
+        if agentIndex == 0:
+            return self.maxValue(gameState, agentIndex, myDepth)
+
+        # if a ghost is about to move
+        else:
+            return self.minValue(gameState, agentIndex, myDepth)
 
     def getAction(self, gameState):
         """
@@ -183,7 +223,19 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        bestStateValue = -1e309
+        bestAction = None
+
+        for action in gameState.getLegalActions(0):
+            successorState = gameState.generateSuccessor(0, action)
+            successorStateValue = self.stateValue(successorState, 1)
+            if successorStateValue > bestStateValue:
+                bestAction = action
+                bestStateValue = successorStateValue
+
+        return bestAction
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
