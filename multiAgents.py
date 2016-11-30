@@ -331,6 +331,57 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
     """
+    def maxValue(self, gameState, agentIndex, myDepth):
+        v = -1e309
+        legalActions = gameState.getLegalActions(agentIndex)
+
+        bestAction = None
+
+        for action in legalActions:
+            successorState = gameState.generateSuccessor(agentIndex, action);
+            successorStateValue = self.stateValue(successorState, myDepth + 1)[1]
+
+            if successorStateValue > v:
+                v = successorStateValue
+                bestAction = action
+
+        return [bestAction, v]
+
+    def avgValue(self, gameState, agentIndex, myDepth):
+        legalActions = gameState.getLegalActions(agentIndex)
+
+        sum = 0.0
+
+        for action in legalActions:
+            successorState = gameState.generateSuccessor(agentIndex, action);
+            successorStateValue = self.stateValue(successorState, myDepth + 1)[1]
+
+            sum += float(successorStateValue)
+
+        avg = sum / len(legalActions)
+
+        return [None, avg]
+
+    def stateValue(self, gameState, myDepth):
+        # BASE CASE
+        calculatedDepth = (myDepth / gameState.getNumAgents())
+
+        if gameState.isLose() or gameState.isWin() or calculatedDepth >= self.depth:
+            return [None, self.evaluationFunction(gameState)]
+
+        # RECURSIVE CASES
+
+        # the agent that's about to move
+        agentIndex = myDepth % gameState.getNumAgents()
+
+        # if pacman is about to move
+        if agentIndex == 0:
+            return self.maxValue(gameState, agentIndex, myDepth)
+
+        # if a ghost is about to move
+        else:
+            return self.avgValue(gameState, agentIndex, myDepth)
+
 
     def getAction(self, gameState):
         """
@@ -340,7 +391,11 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        [bestAction, value] = self.stateValue(gameState, 0)
+
+        return bestAction
+
 
 def betterEvaluationFunction(currentGameState):
     """
