@@ -246,35 +246,48 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         v = -1e309
         legalActions = gameState.getLegalActions(agentIndex)
 
+        bestAction = None
+
         for action in legalActions:
             successorState = gameState.generateSuccessor(agentIndex, action);
-            v = max(v, self.stateValue(successorState, myDepth + 1, alpha, beta))
+            successorStateValue = self.stateValue(successorState, myDepth + 1, alpha, beta)
+
+            if successorStateValue[1] > v:
+                v = successorStateValue[1]
+                bestAction = action
+
             if v > beta:
-                return v
+                return [bestAction, v]
             alpha = max(alpha, v)
 
-        return v
+        return [bestAction, v]
 
     def minValue(self, gameState, agentIndex, myDepth, alpha, beta):
         v = 1e309
-
         legalActions = gameState.getLegalActions(agentIndex)
+
+        bestAction = None
 
         for action in legalActions:
             successorState = gameState.generateSuccessor(agentIndex, action);
-            v = min(v, self.stateValue(successorState, myDepth + 1, alpha, beta))
+            successorStateValue = self.stateValue(successorState, myDepth + 1, alpha, beta)
+
+            if successorStateValue[1] < v:
+                v = successorStateValue[1]
+                bestAction = action
+
             if v < alpha:
-                return v
+                return [bestAction, v]
             beta = min(beta, v)
 
-        return v
+        return [bestAction, v]
 
     def stateValue(self, gameState, myDepth, alpha, beta):
         # BASE CASE
         calculatedDepth = (myDepth / gameState.getNumAgents())
 
         if gameState.isLose() or gameState.isWin() or calculatedDepth >= self.depth:
-            return self.evaluationFunction(gameState)
+            return [None, self.evaluationFunction(gameState)]
 
         # RECURSIVE CASES
 
@@ -310,15 +323,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         alpha = -1e309
         beta = 1e309
 
-        bestStateValue = -1e309
-        bestAction = None
-
-        for action in gameState.getLegalActions(0):
-            successorState = gameState.generateSuccessor(0, action)
-            successorStateValue = self.stateValue(successorState, 1, alpha, beta)
-            if successorStateValue > bestStateValue:
-                bestAction = action
-                bestStateValue = successorStateValue
+        [bestAction, value] = self.stateValue(gameState, 0, alpha, beta)
 
         return bestAction
 
