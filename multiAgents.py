@@ -242,12 +242,85 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
       Your minimax agent with alpha-beta pruning (question 3)
     """
 
+    def maxValue(self, gameState, agentIndex, myDepth, alpha, beta):
+        v = -1e309
+        legalActions = gameState.getLegalActions(agentIndex)
+
+        for action in legalActions:
+            successorState = gameState.generateSuccessor(agentIndex, action);
+            v = max(v, self.stateValue(successorState, myDepth + 1, alpha, beta))
+            if v > beta:
+                return v
+            alpha = max(alpha, v)
+
+        return v
+
+    def minValue(self, gameState, agentIndex, myDepth, alpha, beta):
+        v = 1e309
+
+        legalActions = gameState.getLegalActions(agentIndex)
+
+        for action in legalActions:
+            successorState = gameState.generateSuccessor(agentIndex, action);
+            v = min(v, self.stateValue(successorState, myDepth + 1, alpha, beta))
+            if v < alpha:
+                return v
+            beta = min(beta, v)
+
+        return v
+
+    def stateValue(self, gameState, myDepth, alpha, beta):
+        # BASE CASE
+        calculatedDepth = (myDepth / gameState.getNumAgents())
+
+        if gameState.isLose() or gameState.isWin() or calculatedDepth >= self.depth:
+            return self.evaluationFunction(gameState)
+
+        # RECURSIVE CASES
+
+        # the agent that's about to move
+        agentIndex = myDepth % gameState.getNumAgents()
+
+        # if pacman is about to move
+        if agentIndex == 0:
+            return self.maxValue(gameState, agentIndex, myDepth, alpha, beta)
+
+        # if a ghost is about to move
+        else:
+            return self.minValue(gameState, agentIndex, myDepth, alpha, beta)
+
     def getAction(self, gameState):
         """
-          Returns the minimax action using self.depth and self.evaluationFunction
+          Returns the minimax action from the current gameState using self.depth
+          and self.evaluationFunction.
+
+          Here are some method calls that might be useful when implementing minimax.
+
+          gameState.getLegalActions(agentIndex):
+            Returns a list of legal actions for an agent
+            agentIndex=0 means Pacman, ghosts are >= 1
+
+          gameState.generateSuccessor(agentIndex, action):
+            Returns the successor game state after an agent takes an action
+
+          gameState.getNumAgents():
+            Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        alpha = -1e309
+        beta = 1e309
+
+        bestStateValue = -1e309
+        bestAction = None
+
+        for action in gameState.getLegalActions(0):
+            successorState = gameState.generateSuccessor(0, action)
+            successorStateValue = self.stateValue(successorState, 1, alpha, beta)
+            if successorStateValue > bestStateValue:
+                bestAction = action
+                bestStateValue = successorStateValue
+
+        return bestAction
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
