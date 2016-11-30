@@ -404,8 +404,62 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    newGhostStates = currentGameState.getGhostStates()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+
+    returnScoreElements = []
+
+    # # starting game score
+    # gameStateScore = successorGameState.getScore()
+    # returnScoreElements.append(gameStateScore)
+
+    numFood = currentGameState.getNumFood()
+
+    returnScoreElements.append(- 10000 * numFood)
+
+    if numFood == 0:
+        return 1000000
+
+    ghostStates = currentGameState.getGhostStates()
+
+    # max dist to ghost - more is better
+    maxDistanceToGhost = 0
+    for ghostState in ghostStates:
+        distance = manhattanDistance(ghostState.configuration.pos, newPos)
+        if maxDistanceToGhost < distance:
+            maxDistanceToGhost = distance
+
+    returnScoreElements.append(maxDistanceToGhost / 2)
+
+    # if pacman is right next to a ghost, flee
+    if maxDistanceToGhost <= 2:
+        return -10000000
+
+    # # max dist to food - less is better
+    # maxDistanceToFood = 0
+    # for food in newFood.asList():
+    #     distance = manhattanDistance(food, newPos) + 2
+    #     if maxDistanceToFood < distance:
+    #         maxDistanceToFood = distance
+    #
+    # returnScoreElements.append(-maxDistanceToFood)
+
+    # min dist to food - less is better
+    minDistanceToFood = 1000000
+    for food in newFood.asList():
+        distance = manhattanDistance(food, newPos) + 2
+        if minDistanceToFood > distance:
+            minDistanceToFood = distance
+
+    returnScoreElements.append(- 100 * minDistanceToFood)
+
+    returnScore = 0
+    for element in returnScoreElements:
+        returnScore += element
+
+    return returnScore
 
 # Abbreviation
 better = betterEvaluationFunction
